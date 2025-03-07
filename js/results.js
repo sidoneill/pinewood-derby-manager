@@ -1,14 +1,16 @@
 import { getCompletedRaces } from './races.js';
-import { getRacers, updateRacerPoints } from './racers.js';
+import { getRacers, updateRacerPoints, resetRacerPoints } from './racers.js';
 
+// Local storage key
+const RESULTS_STORAGE_KEY = 'pinewood_derby_results';
+
+// Calculate and store results
 export function calculateResults() {
   const completedRaces = getCompletedRaces();
   const racers = getRacers();
   
   // Reset points
-  racers.forEach(racer => {
-    racer.points = 0;
-  });
+  resetRacerPoints();
   
   // Assign points based on finishing position
   // 1st place: 6 points, 2nd place: 5 points, etc.
@@ -24,5 +26,32 @@ export function calculateResults() {
   });
   
   // Sort racers by points (descending)
-  return racers.sort((a, b) => b.points - a.points);
+  const sortedRacers = racers.sort((a, b) => b.points - a.points);
+  
+  // Save results to localStorage
+  saveResults(sortedRacers);
+  
+  return sortedRacers;
+}
+
+// Save results to localStorage
+function saveResults(results) {
+  localStorage.setItem(RESULTS_STORAGE_KEY, JSON.stringify({
+    timestamp: new Date().toISOString(),
+    results: results
+  }));
+}
+
+// Load results from localStorage
+export function loadResults() {
+  const savedResults = localStorage.getItem(RESULTS_STORAGE_KEY);
+  if (savedResults) {
+    return JSON.parse(savedResults);
+  }
+  return null;
+}
+
+// Clear results from localStorage
+export function clearResults() {
+  localStorage.removeItem(RESULTS_STORAGE_KEY);
 }
