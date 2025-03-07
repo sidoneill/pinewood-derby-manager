@@ -55,6 +55,7 @@ You can add racers in two ways:
 Click the "Open Display View" button to open a separate window designed for projection or a secondary display. This view shows:
 
 - The current race
+- The next race
 - Current standings
 - Results of the last completed race
 
