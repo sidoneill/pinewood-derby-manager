@@ -1,5 +1,17 @@
 import { addRacer, getRacers, clearRacers, loadRacers, importRacersFromCSV } from './racers.js';
-import { generateRaces, getCurrentRace, getAllRaces, markRaceComplete, loadRaces, clearRaces, areRacesLocked } from './races.js';
+import { 
+  generateRaces, 
+  getCurrentRace, 
+  getAllRaces, 
+  markRaceComplete, 
+  loadRaces, 
+  clearRaces, 
+  areRacesLocked, 
+  editRaceResults,
+  areAllRegularRacesComplete,
+  generateFinals,
+  getFinals
+} from './races.js';
 import { calculateResults, clearResults } from './results.js';
 
 export function setupUI() {
@@ -59,12 +71,35 @@ export function setupUI() {
       clearResults();
     }
     
-    if (generateRaces()) {
+    // Get selected race format
+    const formatRadios = document.getElementsByName('race-format');
+    let selectedFormat = 'all-lanes';
+    
+    for (const radio of formatRadios) {
+      if (radio.checked) {
+        selectedFormat = radio.value;
+        break;
+      }
+    }
+    
+    if (generateRaces(selectedFormat)) {
       updateUI();
     } else {
       alert('Need at least 2 racers to generate races.');
     }
   });
+  
+  // Generate finals button
+  const finalsButton = document.getElementById('generate-finals');
+  if (finalsButton) {
+    finalsButton.addEventListener('click', () => {
+      if (generateFinals()) {
+        updateUI();
+      } else {
+        alert('Unable to generate finals. Ensure you have at least 3 racers with completed races.');
+      }
+    });
+  }
   
   // Clear storage button
   document.getElementById('clear-storage').addEventListener('click', () => {
@@ -93,6 +128,16 @@ export function updateUI() {
     generateButton.textContent = 'Regenerate Races';
   } else {
     generateButton.textContent = 'Generate & Lock Races';
+  }
+  
+  // Show/hide finals container
+  const finalsContainer = document.getElementById('finals-container');
+  if (finalsContainer) {
+    if (areAllRegularRacesComplete() && getFinals().length === 0) {
+      finalsContainer.classList.remove('hidden');
+    } else {
+      finalsContainer.classList.add('hidden');
+    }
   }
 }
 
@@ -143,50 +188,73 @@ function updateRacesDisplay() {
   
   races.forEach(race => {
     const raceDiv = document.createElement('div');
-    raceDiv.className = `race ${race.completed ? 'completed' : 'active'}`;
+    raceDiv.className = `race ${race.completed ? 'completed' : 'active'} ${race.isFinal ? 'finals-race' : ''}`;
     
-    raceDiv.innerHTML = `
-      <h3>Race #${race.number}</h3>
-      <table class="lanes-table">
-        <thead>
-          <tr>
-            <th>Lane</th>
-            <th>Racer</th>
-            <th>Car #</th>
-            <th>Den</th>
-            ${!race.completed ? '<th>Select Winners</th>' : ''}
-          </tr>
-        </thead>
-        <tbody>
-          ${race.lanes.map(lane => `
-            <tr>
-              <td>${lane.lane}</td>
-              <td>${lane.racer.name}</td>
-              <td>${lane.racer.carNumber}</td>
-              <td>${lane.racer.den || ''}</td>
-              ${!race.completed ? `
-                <td>
-                  <button class="place-btn" data-race="${race.id}" data-lane="${lane.lane}">
-                    Select
-                  </button>
-                </td>
-              ` : ''}
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-      ${race.completed ? `
-        <div class="race-results">
-          <h4>Results:</h4>
-          <ol>
-            ${race.winners.map(lane => {
-              const laneData = race.lanes.find(l => l.lane === lane);
-              return `<li>Lane ${lane}: ${laneData.racer.name} (Car #${laneData.racer.carNumber})</li>`;
-            }).join('')}
-          </ol>
-        </div>
-      ` : ''}
+    // Add racing info heading
+    let heading = `<h3>${race.isFinal ? '<span class="finals-title">FINALS</span> ' : ''}Race #${race.number}</h3>`;
+    
+    // Add edit button for completed races
+    if (race.completed) {
+      heading += `<button class="edit-btn" data-race="${race.id}">Edit Results</button>`;
+    }
+    
+    raceDiv.innerHTML = heading;
+    
+    // Create table for lanes
+    const table = document.createElement('table');
+    table.className = 'lanes-table';
+    
+    let tableHtml = `
+      <thead>
+        <tr>
+          <th>Lane</th>
+          <th>Racer</th>
+          <th>Car #</th>
+          <th>Den</th>
+          ${!race.completed ? '<th>Select Winners</th>' : ''}
+        </tr>
+      </thead>
+      <tbody>
     `;
+    
+    race.lanes.forEach(lane => {
+      tableHtml += `
+        <tr>
+          <td>${lane.lane}</td>
+          <td>${lane.racer.name}</td>
+          <td>${lane.racer.carNumber}</td>
+          <td>${lane.racer.den || ''}</td>
+          ${!race.completed ? `
+            <td>
+              <button class="place-btn" data-race="${race.id}" data-lane="${lane.lane}">
+                Select
+              </button>
+            </td>
+          ` : ''}
+        </tr>
+      `;
+    });
+    
+    tableHtml += '</tbody>';
+    table.innerHTML = tableHtml;
+    raceDiv.appendChild(table);
+    
+    // Add results section for completed races
+    if (race.completed) {
+      const resultsDiv = document.createElement('div');
+      resultsDiv.className = 'race-results';
+      
+      let resultsHtml = '<h4>Results:</h4><ol>';
+      
+      race.winners.forEach(lane => {
+        const laneData = race.lanes.find(l => l.lane === lane);
+        resultsHtml += `<li>Lane ${lane}: ${laneData.racer.name} (Car #${laneData.racer.carNumber})</li>`;
+      });
+      
+      resultsHtml += '</ol>';
+      resultsDiv.innerHTML = resultsHtml;
+      raceDiv.appendChild(resultsDiv);
+    }
     
     racesContainer.appendChild(raceDiv);
   });
@@ -222,20 +290,80 @@ function updateRacesDisplay() {
       }
     });
   });
+  
+  // Add event listeners for edit buttons
+  document.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const raceId = this.getAttribute('data-race');
+      
+      if (editRaceResults(raceId)) {
+        // Recalculate results after changing race status
+        calculateResults();
+        updateUI();
+      }
+    });
+  });
 }
 
 function updateResultsDisplay() {
   const resultsContainer = document.getElementById('results-container');
   const rankedRacers = calculateResults();
   const races = getAllRaces();
-  const completedRaces = races.filter(race => race.completed);
+  const regularRaces = races.filter(race => !race.isFinal);
+  const finalsRaces = races.filter(race => race.isFinal);
+  const completedRegularRaces = regularRaces.filter(race => race.completed);
+  const completedFinalsRaces = finalsRaces.filter(race => race.completed);
   
-  if (completedRaces.length === 0) {
+  if (completedRegularRaces.length === 0) {
     resultsContainer.innerHTML = '<p>No completed races yet.</p>';
     return;
   }
   
-  resultsContainer.innerHTML = `
+  // If finals are complete, show a special header
+  let finalsHeader = '';
+  if (completedFinalsRaces.length === finalsRaces.length && finalsRaces.length > 0) {
+    // Get the final standings from the finals
+    const finalsResults = [];
+    
+    // Get points just from finals races
+    rankedRacers.forEach(racer => {
+      finalsResults.push({
+        ...racer,
+        finalsPoints: 0
+      });
+    });
+    
+    // Calculate points from finals races
+    completedFinalsRaces.forEach(race => {
+      race.winners.forEach((laneNumber, position) => {
+        const lane = race.lanes.find(l => l.lane === laneNumber);
+        if (lane) {
+          const points = 3 - position; // 3 for 1st, 2 for 2nd, 1 for 3rd
+          const racer = finalsResults.find(r => r.id === lane.racer.id);
+          if (racer) {
+            racer.finalsPoints += points;
+          }
+        }
+      });
+    });
+    
+    // Sort by finals points
+    finalsResults.sort((a, b) => b.finalsPoints - a.finalsPoints);
+    
+    // Display top 3
+    finalsHeader = `
+      <div class="finals-results">
+        <h3 class="finals-title">Championship Finals Results</h3>
+        <ol>
+          <li>${finalsResults[0].name} (Car #${finalsResults[0].carNumber}) - CHAMPION</li>
+          <li>${finalsResults[1].name} (Car #${finalsResults[1].carNumber}) - 2nd Place</li>
+          <li>${finalsResults[2].name} (Car #${finalsResults[2].carNumber}) - 3rd Place</li>
+        </ol>
+      </div>
+    `;
+  }
+  
+  resultsContainer.innerHTML = finalsHeader + `
     <h3>Current Standings</h3>
     <table class="results-table">
       <thead>
@@ -259,7 +387,9 @@ function updateResultsDisplay() {
         `).join('')}
       </tbody>
     </table>
-    <p><strong>Race Progress:</strong> ${completedRaces.length}/${races.length} races completed</p>
+    <p><strong>Race Progress:</strong> ${completedRegularRaces.length}/${regularRaces.length} regular races completed${
+      finalsRaces.length > 0 ? `, ${completedFinalsRaces.length}/${finalsRaces.length} finals races completed` : ''
+    }</p>
   `;
 }
 
