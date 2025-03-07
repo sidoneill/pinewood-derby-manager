@@ -139,6 +139,17 @@ export function updateUI() {
       finalsContainer.classList.add('hidden');
     }
   }
+  
+  // Show/hide results summary button
+  const viewSummaryBtn = document.getElementById('view-summary-btn');
+  if (viewSummaryBtn) {
+    const races = getAllRaces();
+    if (races.length > 0 && races.some(race => race.completed)) {
+      viewSummaryBtn.classList.remove('hidden');
+    } else {
+      viewSummaryBtn.classList.add('hidden');
+    }
+  }
 }
 
 function updateRacersList() {
