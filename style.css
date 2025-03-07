@@ -24,6 +24,18 @@ h1 {
   color: #333;
 }
 
+h2 {
+  margin-top: 0;
+  color: #444;
+}
+
+h3 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  color: #555;
+  font-size: 1.1em;
+}
+
 .sections {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
@@ -36,11 +48,39 @@ h1 {
   border-radius: 8px;
 }
 
+.racer-form {
+  margin-bottom: 20px;
+}
+
+.csv-import {
+  padding: 15px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.manual-entry {
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+.hint {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
+}
+
 input, button {
   padding: 8px 12px;
   margin-bottom: 10px;
   border-radius: 4px;
   border: 1px solid #ddd;
+}
+
+input[type="file"] {
+  padding: 5px;
+  margin-top: 5px;
 }
 
 button {
@@ -58,6 +98,20 @@ button:hover {
 button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+}
+
+.danger-btn {
+  background-color: #f44336;
+  margin-top: 20px;
+}
+
+.danger-btn:hover {
+  background-color: #d32f2f;
+}
+
+.actions {
+  margin-top: 20px;
+  text-align: center;
 }
 
 table {
