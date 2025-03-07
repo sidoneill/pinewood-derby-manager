@@ -71,7 +71,7 @@ h3 {
   margin-top: 5px;
 }
 
-input, button {
+input, button, .btn {
   padding: 8px 12px;
   margin-bottom: 10px;
   border-radius: 4px;
@@ -83,19 +83,22 @@ input[type="file"] {
   margin-top: 5px;
 }
 
-button {
+button, .btn {
   background-color: #4CAF50;
   color: white;
   border: none;
   cursor: pointer;
   transition: background-color 0.3s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
 }
 
-button:hover {
+button:hover, .btn:hover {
   background-color: #45a049;
 }
 
-button:disabled {
+button:disabled, .btn:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
 }
@@ -107,6 +110,19 @@ button:disabled {
 
 .danger-btn:hover {
   background-color: #d32f2f;
+}
+
+.secondary-btn {
+  background-color: #2196F3;
+}
+
+.secondary-btn:hover {
+  background-color: #0b7dda;
+}
+
+.primary-btn {
+  background-color: #4CAF50;
+  font-weight: bold;
 }
 
 .actions {
@@ -152,6 +168,63 @@ th, td {
   padding: 10px;
   background-color: #f1f8e9;
   border-radius: 4px;
+}
+
+.radio-group {
+  margin-bottom: 15px;
+}
+
+.radio-group label {
+  display: block;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  margin-right: 8px;
+}
+
+.race-options {
+  background-color: #f0f8ff;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.edit-btn {
+  background-color: #ff9800;
+  margin-left: 10px;
+}
+
+.edit-btn:hover {
+  background-color: #e68a00;
+}
+
+.edit-mode {
+  background-color: #fff9c4;
+}
+
+#finals-container {
+  background-color: #fff9c4;
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 20px;
+  border: 1px solid #ffd54f;
+}
+
+.finals-race {
+  background-color: #fffde7;
+  border: 1px solid #ffca28;
+}
+
+.finals-title {
+  color: #ff6f00;
+  text-align: center;
+  margin-bottom: 15px;
 }
 
 /* Responsive layout */
