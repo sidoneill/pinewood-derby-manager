@@ -14,22 +14,36 @@
       <div class="section">
         <h2>Racers</h2>
         <div class="racer-form">
-          <input type="text" id="racer-name" placeholder="Racer Name">
-          <input type="number" id="car-number" placeholder="Car #">
-          <button id="add-racer">Add Racer</button>
+          <div class="csv-import">
+            <label for="csv-file">Import Racers from CSV:</label>
+            <input type="file" id="csv-file" accept=".csv">
+            <button id="import-csv">Import</button>
+            <p class="hint">CSV should have columns: car number, first name, last name, den</p>
+          </div>
+          <div class="manual-entry">
+            <h3>Add Single Racer</h3>
+            <input type="text" id="racer-firstname" placeholder="First Name">
+            <input type="text" id="racer-lastname" placeholder="Last Name">
+            <input type="number" id="car-number" placeholder="Car #">
+            <input type="text" id="den" placeholder="Den">
+            <button id="add-racer">Add Racer</button>
+          </div>
         </div>
         <div id="racers-list"></div>
       </div>
       
       <div class="section">
         <h2>Races</h2>
-        <button id="generate-races" disabled>Generate Races</button>
+        <button id="generate-races" disabled>Generate & Lock Races</button>
         <div id="races-container"></div>
       </div>
       
       <div class="section">
         <h2>Results</h2>
         <div id="results-container"></div>
+        <div class="actions">
+          <button id="clear-storage" class="danger-btn">Clear All Data</button>
+        </div>
       </div>
     </div>
   </div>
