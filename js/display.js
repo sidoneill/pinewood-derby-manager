@@ -50,17 +50,76 @@ function updateCurrentRaceDisplay(races, currentRaceIndex) {
   const currentRace = races[currentRaceIndex];
   
   if (currentRace.completed) {
-    container.innerHTML = '<div class="no-data">All races completed</div>';
+    container.innerHTML = '<div class="no-data">Current race is completed</div>';
     return;
   }
 
   let html = `
-    <div class="race-info">Race #${currentRace.number}</div>
+    <div class="race-info">${currentRace.isFinal ? '<span class="finals-title">FINALS</span> ' : ''}Race #${currentRace.number}</div>
   `;
 
   currentRace.lanes.forEach(lane => {
     html += `
       <div class="lane">
+        <div class="lane-number">${lane.lane}</div>
+        <div class="racer-info">
+          <div class="racer-name">${lane.racer.name}</div>
+          <div class="car-number">Car #${lane.racer.carNumber}</div>
+          ${lane.racer.den ? `<div class="den-info">Den: ${lane.racer.den}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// Function to update the next race display
+function updateNextRaceDisplay(races, currentRaceIndex) {
+  const container = document.getElementById('next-race-container');
+  
+  if (races.length === 0) {
+    container.innerHTML = '<div class="no-data">No races scheduled</div>';
+    return;
+  }
+
+  // Find the next race that isn't completed
+  let nextRaceIndex = -1;
+  for (let i = currentRaceIndex + 1; i < races.length; i++) {
+    if (!races[i].completed) {
+      nextRaceIndex = i;
+      break;
+    }
+  }
+
+  // If no next race found, check if current race is completed
+  // and look for the first uncompleted race
+  if (nextRaceIndex === -1) {
+    if (currentRaceIndex < races.length && races[currentRaceIndex].completed) {
+      for (let i = 0; i < races.length; i++) {
+        if (!races[i].completed) {
+          nextRaceIndex = i;
+          break;
+        }
+      }
+    }
+  }
+
+  // If still no next race found, all races are completed
+  if (nextRaceIndex === -1) {
+    container.innerHTML = '<div class="no-data">All races are completed</div>';
+    return;
+  }
+
+  const nextRace = races[nextRaceIndex];
+
+  let html = `
+    <div class="race-info">${nextRace.isFinal ? '<span class="finals-title">FINALS</span> ' : ''}Race #${nextRace.number}</div>
+  `;
+
+  nextRace.lanes.forEach(lane => {
+    html += `
+      <div class="lane next-lane">
         <div class="lane-number">${lane.lane}</div>
         <div class="racer-info">
           <div class="racer-name">${lane.racer.name}</div>
@@ -121,11 +180,19 @@ function updateStandingsDisplay(racers) {
 }
 
 // Function to update the last race results display
-function updateLastRaceDisplay(races) {
+function updateLastRaceDisplay(races, currentRaceIndex) {
   const container = document.getElementById('last-race-container');
   
-  // Find the last completed race
-  const lastCompletedRace = [...races].filter(race => race.completed).pop();
+  // Find the last completed race (prioritize the one right before current)
+  let lastCompletedRace = null;
+  
+  // First check if there's a completed race right before current
+  if (currentRaceIndex > 0 && races[currentRaceIndex - 1].completed) {
+    lastCompletedRace = races[currentRaceIndex - 1];
+  } else {
+    // Otherwise, find the last completed race in the entire array
+    lastCompletedRace = [...races].filter(race => race.completed).pop();
+  }
   
   if (!lastCompletedRace) {
     container.innerHTML = '<div class="no-data">No completed races yet</div>';
@@ -133,7 +200,7 @@ function updateLastRaceDisplay(races) {
   }
 
   let html = `
-    <div class="race-info">Race #${lastCompletedRace.number} Results</div>
+    <div class="race-info">${lastCompletedRace.isFinal ? '<span class="finals-title">FINALS</span> ' : ''}Race #${lastCompletedRace.number} Results</div>
   `;
 
   lastCompletedRace.winners.forEach((laneNumber, index) => {
@@ -160,8 +227,9 @@ function updateDisplay() {
   const data = loadData();
   
   updateCurrentRaceDisplay(data.races, data.currentRaceIndex);
+  updateNextRaceDisplay(data.races, data.currentRaceIndex);
   updateStandingsDisplay(data.racers);
-  updateLastRaceDisplay(data.races);
+  updateLastRaceDisplay(data.races, data.currentRaceIndex);
 }
 
 // Initialize the display
