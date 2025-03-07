@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pinewood Derby Manager</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Pinewood Derby Race Manager</h1>
+    
+    <div class="sections">
+      <div class="section">
+        <h2>Racers</h2>
+        <div class="racer-form">
+          <input type="text" id="racer-name" placeholder="Racer Name">
+          <input type="number" id="car-number" placeholder="Car #">
+          <button id="add-racer">Add Racer</button>
+        </div>
+        <div id="racers-list"></div>
+      </div>
+      
+      <div class="section">
+        <h2>Races</h2>
+        <button id="generate-races" disabled>Generate Races</button>
+        <div id="races-container"></div>
+      </div>
+      
+      <div class="section">
+        <h2>Results</h2>
+        <div id="results-container"></div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
