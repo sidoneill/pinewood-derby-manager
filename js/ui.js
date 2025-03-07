@@ -1,27 +1,64 @@
-import { addRacer, getRacers, clearRacers } from './racers.js';
-import { generateRaces, getCurrentRace, getAllRaces, markRaceComplete } from './races.js';
-import { calculateResults } from './results.js';
+import { addRacer, getRacers, clearRacers, loadRacers, importRacersFromCSV } from './racers.js';
+import { generateRaces, getCurrentRace, getAllRaces, markRaceComplete, loadRaces, clearRaces, areRacesLocked } from './races.js';
+import { calculateResults, clearResults } from './results.js';
 
 export function setupUI() {
   // Add racer button
   document.getElementById('add-racer').addEventListener('click', () => {
-    const nameInput = document.getElementById('racer-name');
+    const firstNameInput = document.getElementById('racer-firstname');
+    const lastNameInput = document.getElementById('racer-lastname');
     const carInput = document.getElementById('car-number');
+    const denInput = document.getElementById('den');
     
-    const name = nameInput.value.trim();
+    const firstName = firstNameInput.value.trim();
+    const lastName = lastNameInput.value.trim();
     const carNumber = parseInt(carInput.value);
+    const den = denInput.value.trim();
     
-    if (addRacer(name, carNumber)) {
-      nameInput.value = '';
+    if (addRacer(firstName, lastName, carNumber, den)) {
+      firstNameInput.value = '';
+      lastNameInput.value = '';
       carInput.value = '';
+      denInput.value = '';
       updateUI();
     } else {
       alert('Please enter a valid name and a unique car number.');
     }
   });
   
+  // CSV Import button
+  document.getElementById('import-csv').addEventListener('click', () => {
+    const fileInput = document.getElementById('csv-file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+      alert('Please select a CSV file to import.');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const csvContent = e.target.result;
+      if (importRacersFromCSV(csvContent)) {
+        fileInput.value = '';
+        updateUI();
+        alert('Racers imported successfully!');
+      } else {
+        alert('Failed to import racers. Please check your CSV format.');
+      }
+    };
+    reader.readAsText(file);
+  });
+  
   // Generate races button
   document.getElementById('generate-races').addEventListener('click', () => {
+    if (areRacesLocked()) {
+      const confirm = window.confirm('Races have already been generated and locked. Are you sure you want to regenerate them? This will clear all existing race results.');
+      if (!confirm) return;
+      clearRaces();
+      clearResults();
+    }
+    
     if (generateRaces()) {
       updateUI();
     } else {
@@ -29,7 +66,16 @@ export function setupUI() {
     }
   });
   
-  // Race completion will be handled in the updateUI function
+  // Clear storage button
+  document.getElementById('clear-storage').addEventListener('click', () => {
+    const confirm = window.confirm('Are you sure you want to clear all data? This will delete all racers, races, and results.');
+    if (!confirm) return;
+    
+    clearRacers();
+    clearRaces();
+    clearResults();
+    updateUI();
+  });
 }
 
 export function updateUI() {
@@ -41,6 +87,13 @@ export function updateUI() {
   const racers = getRacers();
   const generateButton = document.getElementById('generate-races');
   generateButton.disabled = racers.length < 2;
+  
+  // Update button text based on race lock status
+  if (areRacesLocked()) {
+    generateButton.textContent = 'Regenerate Races';
+  } else {
+    generateButton.textContent = 'Generate & Lock Races';
+  }
 }
 
 function updateRacersList() {
@@ -58,15 +111,17 @@ function updateRacersList() {
   table.innerHTML = `
     <thead>
       <tr>
-        <th>Name</th>
         <th>Car #</th>
+        <th>Name</th>
+        <th>Den</th>
       </tr>
     </thead>
     <tbody>
       ${racers.map(racer => `
         <tr>
-          <td>${racer.name}</td>
           <td>${racer.carNumber}</td>
+          <td>${racer.name}</td>
+          <td>${racer.den || ''}</td>
         </tr>
       `).join('')}
     </tbody>
@@ -98,6 +153,7 @@ function updateRacesDisplay() {
             <th>Lane</th>
             <th>Racer</th>
             <th>Car #</th>
+            <th>Den</th>
             ${!race.completed ? '<th>Select Winners</th>' : ''}
           </tr>
         </thead>
@@ -107,6 +163,7 @@ function updateRacesDisplay() {
               <td>${lane.lane}</td>
               <td>${lane.racer.name}</td>
               <td>${lane.racer.carNumber}</td>
+              <td>${lane.racer.den || ''}</td>
               ${!race.completed ? `
                 <td>
                   <button class="place-btn" data-race="${race.id}" data-lane="${lane.lane}">
@@ -158,6 +215,8 @@ function updateRacesDisplay() {
         // If all lanes have been assigned places, mark the race as complete
         if (race.winners.length === race.lanes.length) {
           markRaceComplete(raceId, race.winners);
+          // Recalculate results after race completion (autosave)
+          calculateResults();
           updateUI();
         }
       }
@@ -168,7 +227,8 @@ function updateRacesDisplay() {
 function updateResultsDisplay() {
   const resultsContainer = document.getElementById('results-container');
   const rankedRacers = calculateResults();
-  const completedRaces = getAllRaces().filter(race => race.completed);
+  const races = getAllRaces();
+  const completedRaces = races.filter(race => race.completed);
   
   if (completedRaces.length === 0) {
     resultsContainer.innerHTML = '<p>No completed races yet.</p>';
@@ -183,6 +243,7 @@ function updateResultsDisplay() {
           <th>Position</th>
           <th>Name</th>
           <th>Car #</th>
+          <th>Den</th>
           <th>Points</th>
         </tr>
       </thead>
@@ -192,11 +253,13 @@ function updateResultsDisplay() {
             <td>${index + 1}</td>
             <td>${racer.name}</td>
             <td>${racer.carNumber}</td>
+            <td>${racer.den || ''}</td>
             <td>${racer.points}</td>
           </tr>
         `).join('')}
       </tbody>
     </table>
+    <p><strong>Race Progress:</strong> ${completedRaces.length}/${races.length} races completed</p>
   `;
 }
 
