@@ -11,6 +11,7 @@ A simple system for managing Pinewood Derby races with a 6-lane track.
 - Edit results of completed races
 - Run championship finals for top 3 racers
 - Separate display view for audience/projector
+- Comprehensive results summary with print option
 - Races and results persist between page refreshes
 - Results autosave after each race
 
@@ -60,6 +61,17 @@ Click the "Open Display View" button to open a separate window designed for proj
 - Results of the last completed race
 
 The display view automatically refreshes to show the latest data.
+
+### Results Summary
+
+After completing races, a "View Complete Results Summary" button appears. Clicking this opens a comprehensive summary that includes:
+
+- Final standings of all racers
+- Championship finals results (if any)
+- Detailed results from all races
+- A print button to create a hard copy or PDF
+
+This summary is perfect for archiving race results and distributing them to participants.
 
 ### Data Persistence
 
