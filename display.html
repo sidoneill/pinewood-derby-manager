@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pinewood Derby Display</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    body {
+      background-color: #f0f0f0;
+      padding: 0;
+      margin: 0;
+    }
+    .display-container {
+      max-width: 100%;
+      margin: 0;
+      padding: 20px;
+    }
+    .display-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+      gap: 20px;
+      height: calc(100vh - 40px);
+    }
+    .display-header {
+      grid-column: 1 / 3;
+      text-align: center;
+      margin-bottom: 0;
+    }
+    .display-section {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: auto;
+    }
+    .current-race {
+      display: flex;
+      flex-direction: column;
+    }
+    .lane {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+    }
+    .lane-number {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+      border-radius: 50%;
+      margin-right: 15px;
+    }
+    .racer-info {
+      flex-grow: 1;
+    }
+    .racer-name {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .car-number {
+      font-size: 0.9em;
+      color: #555;
+    }
+    .den-info {
+      font-size: 0.9em;
+      color: #555;
+    }
+    h1 {
+      color: #2e7d32;
+    }
+    h2 {
+      margin-top: 0;
+      color: #2e7d32;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 10px;
+    }
+    .standings-table, .last-race-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .standings-table th, .standings-table td,
+    .last-race-table th, .last-race-table td {
+      padding: 12px 15px;
+      text-align: left;
+    }
+    .standings-table tr:nth-child(even),
+    .last-race-table tr:nth-child(even) {
+      background-color: #f5f5f5;
+    }
+    .standings-table tr:nth-child(1) td {
+      background-color: gold;
+      font-weight: bold;
+    }
+    .standings-table tr:nth-child(2) td {
+      background-color: #C0C0C0;
+      font-weight: bold;
+    }
+    .standings-table tr:nth-child(3) td {
+      background-color: #CD7F32;
+      font-weight: bold;
+    }
+    .race-info {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #777;
+      font-style: italic;
+    }
+    .last-race-result {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+    .place {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: #333;
+      color: white;
+      font-weight: bold;
+      margin-right: 15px;
+    }
+    .place-1 {
+      background-color: gold;
+      color: black;
+    }
+    .place-2 {
+      background-color: silver;
+      color: black;
+    }
+    .place-3 {
+      background-color: #CD7F32;
+    }
+  </style>
+</head>
+<body>
+  <div class="display-container">
+    <div class="display-grid">
+      <div class="display-header">
+        <h1>Pinewood Derby Race</h1>
+      </div>
+      
+      <div class="display-section current-race">
+        <h2>Current Race</h2>
+        <div id="current-race-container">
+          <!-- Current race data will be populated here -->
+        </div>
+      </div>
+      
+      <div class="display-section">
+        <h2>Standings</h2>
+        <div id="standings-container">
+          <!-- Standings data will be populated here -->
+        </div>
+      </div>
+      
+      <div class="display-section">
+        <h2>Last Race Results</h2>
+        <div id="last-race-container">
+          <!-- Last race results will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script type="module" src="./js/display.js"></script>
+</body>
+</html>
